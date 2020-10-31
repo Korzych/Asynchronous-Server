@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30611.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Asynchronous Server", "Asynchronous Server\Asynchronous Server.csproj", "{97F80F27-17D6-4A87-B2D9-35753B710FAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerLibrary", "ServerLibrary\ServerLibrary.csproj", "{596321B8-495C-4867-978D-98F7E4820990}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{97F80F27-17D6-4A87-B2D9-35753B710FAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97F80F27-17D6-4A87-B2D9-35753B710FAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97F80F27-17D6-4A87-B2D9-35753B710FAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97F80F27-17D6-4A87-B2D9-35753B710FAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{596321B8-495C-4867-978D-98F7E4820990}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{596321B8-495C-4867-978D-98F7E4820990}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{596321B8-495C-4867-978D-98F7E4820990}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{596321B8-495C-4867-978D-98F7E4820990}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D3C28A28-AA66-4A9F-82C6-8B60B91B6F5B}
+	EndGlobalSection
+EndGlobal
