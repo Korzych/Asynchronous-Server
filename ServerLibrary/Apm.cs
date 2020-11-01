@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -34,6 +35,7 @@ namespace ServerLibrary
                 ////sprzątanie
             }
         }
+        public List<string> loggedUsers = new List<string>();
         private void TransmissionCallback(IAsyncResult ar)
         {
             // sprzątanie
@@ -47,12 +49,12 @@ namespace ServerLibrary
                 {
                     
                     string username, passwd;
-
+                   
                     byte[] buffer = new byte[Buffer_size];
                     int message_size = stream.Read(buffer, 0, Buffer_size);
                     if (Encoding.ASCII.GetString(buffer, 0, message_size) == "\r\n")
                     {
-                        Console.WriteLine("halo");
+                       // Console.WriteLine("halo");
                         message_size = stream.Read(buffer, 0, 1024);
                     }
                     string rec = Encoding.ASCII.GetString(buffer).Trim();
@@ -62,37 +64,39 @@ namespace ServerLibrary
                     {
              
                         string msg = "Enter Login:\n \r";
+                        buffer = new byte[Buffer_size];
                         stream.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
                         message_size = stream.Read(buffer, 0, Buffer_size);
                         if (Encoding.ASCII.GetString(buffer, 0, message_size) == "\r\n")
                         {
-                            message_size = stream.Read(buffer, 0, 1024);
+                            message_size = stream.Read(buffer, 0, Buffer_size);
                         }
                         username = Encoding.ASCII.GetString(buffer).Trim();
-                        username = correct(username);
+                        username = Correct(username);
+                        buffer = new byte[Buffer_size];
                         msg = "Enter Password:\n \r";
                         stream.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
                         message_size = stream.Read(buffer, 0, Buffer_size);
                         
                         if (Encoding.ASCII.GetString(buffer, 0, message_size) == "\r\n")
                         {
-                            message_size = stream.Read(buffer, 0, 1024);
+                            message_size = stream.Read(buffer, 0, Buffer_size);
                         }
                         passwd= Encoding.ASCII.GetString(buffer).Trim();
-                        passwd = correct(passwd);
-                        if (login(username, passwd))
+                        passwd = Correct(passwd);
+                        if (Login(username, passwd))
                         {
-                            msg = "Logged in\n \r";
+                            msg = "Logged in as "+username +" \n \r";
+                            loggedUsers.Add(username);
                             stream.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
                             if(username == "admin")
                             {
-                                admin(stream);
+                                admin(stream, loggedUsers,passwd);
                             }
                             else
                             {
-                                user(stream);
+                                User(stream, loggedUsers);
                             }
-
                         }
                         else
                         {
@@ -117,34 +121,199 @@ namespace ServerLibrary
             AcceptClient();
 
         }
-        protected void admin(NetworkStream stream)
+        protected void admin(NetworkStream stream, List<string> loggedUsers,string password)
         {
-            //LOGIN
-            //PASSWORD
-            //SPRAWDZANIE CZY USER JEST W PLIKU
-            //SPRAWDZANIE CZY PASSWORD JEST W PLIKU
-            //ODPOWIEDŹ
+            string msg;
+            msg = "Welcome Administrator\n \rusers - List current users\n \radduser- Add user\n \rdeleteuser- Delete User\n \rlogout- Logout\n \r";
+            stream.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
+            while (true)
+            {
+                byte[] buffer = new byte[Buffer_size];
+                int message_size = stream.Read(buffer, 0, Buffer_size);
+                if (Encoding.ASCII.GetString(buffer, 0, message_size) == "\r\n")
+                {
+                    message_size = stream.Read(buffer, 0, Buffer_size);
+                }
+                string rec = Encoding.ASCII.GetString(buffer).Trim();
+                rec = Correct(rec.ToLower());
+                if (rec == "users")
+                {
+                    ListUsers(stream, loggedUsers);
+                }
+                else if (rec == "adduser")
+                {
+
+                    addUser(stream);
+
+                }
+                else if (rec == "deleteuser")
+                {
+                    DeleteUser(password);
+                }
+                else if (rec == "logout")
+                {
+
+                }
+            }
+
             //POLECENIA DOSTĘPU:
+
             //Liczba użytkowników 
             //DODAĆ użytkownika
             //USUŃ UŻytkownika
             //Logout
         }
-        protected void user(NetworkStream stream)
-        { 
+        protected void addUser(NetworkStream stream)
+        {
+            string username;
+            string msg = "Enter Username:\n \r";
+            string passwd;
+            byte[] buffer = new byte[Buffer_size];
+            stream.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
+            int message_size = stream.Read(buffer, 0, Buffer_size);
+            if (Encoding.ASCII.GetString(buffer, 0, message_size) == "\r\n")
+            {
+                message_size = stream.Read(buffer, 0, Buffer_size);
+            }
+            username = Encoding.ASCII.GetString(buffer).Trim();
+            username = Correct(username);
+            buffer = new byte[Buffer_size];
+            msg = "Enter Password:\n \r";
+            stream.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
+            message_size = stream.Read(buffer, 0, Buffer_size);
+
+            if (Encoding.ASCII.GetString(buffer, 0, message_size) == "\r\n")
+            {
+                message_size = stream.Read(buffer, 0, Buffer_size);
+            }
+            passwd = Encoding.ASCII.GetString(buffer).Trim();
+            passwd = Correct(passwd);
+            if(FindUser(username)==-20)
+            {
+                using (StreamWriter sw = File.AppendText(@"users.txt"))
+                {
+                    sw.WriteLine(username);
+                   
+                }
+                using (StreamWriter sw = File.AppendText(@"passwords.txt"))
+                {
+                    sw.WriteLine(passwd);
+
+                }
+                msg = "User created\n \r";
+                stream.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
+
+            }
+            else
+            {
+                msg = "User already exists\n \r";
+                stream.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
+            }
+
+
+            //TWORZENIE KONTA
+        }
+        protected void DeleteUser( string password)
+        {
+            string username;
+            string msg = "Enter Username:\n \r";
+            string passwd;
+            byte[] buffer = new byte[Buffer_size];
+            stream.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
+            int message_size = stream.Read(buffer, 0, Buffer_size);
+            if (Encoding.ASCII.GetString(buffer, 0, message_size) == "\r\n")
+            {
+                message_size = stream.Read(buffer, 0, Buffer_size);
+            }
+            username = Encoding.ASCII.GetString(buffer).Trim();
+            username = Correct(username);
+            buffer = new byte[Buffer_size];
+            msg = "Enter Admin Password To Confirm:\n \r";
+            stream.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
+            message_size = stream.Read(buffer, 0, Buffer_size);
+            if (Encoding.ASCII.GetString(buffer, 0, message_size) == "\r\n")
+            {
+                message_size = stream.Read(buffer, 0, Buffer_size);
+            }
+            passwd = Encoding.ASCII.GetString(buffer).Trim();
+            passwd = Correct(passwd);
+            if(FindUser(username)!=-20&&passwd==password)
+            {
+                //USUWANIE UŻYTKOWNIKA 
+                string[] readText = File.ReadAllLines(@"users.txt");
+                using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"users.txt")) {
+                    for (int i = 0; i < readText.Length; i++)
+                    {
+                        if (i != FindUser(username))
+                        {
+                            file.WriteLine(readText[i]);
+                        }
+                    }
+                }
+                //USUWANIE HASŁA
+                string[] readPass = File.ReadAllLines(@"passwords.txt");
+                using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"passwords.txt"))
+                {
+                    for (int i = 0; i < readPass.Length; i++)
+                    {
+                        if (i != FindUser(username))
+                        {
+                            file.WriteLine(readPass[i]);
+                        }
+                    }
+                }
+            }
+
+
+        }
+        protected void ListUsers(NetworkStream stream, List<string> loggedUsers)
+        {
+            string msg = "There are: " + loggedUsers.Count() + " logged users\r \n";
+            stream.Write(Encoding.ASCII.GetBytes(msg), 0, (msg).Length);
+            loggedUsers.ForEach(users => stream.Write(Encoding.ASCII.GetBytes(users+"\n\r"), 0, (users+"\n\r").Length));
+        }
+        protected int FindUser(string user)
+        {
+            int counter = 0;
+            System.IO.StreamReader file = new System.IO.StreamReader(@"users.txt");
+            string line;
+            while ((line = file.ReadLine()) != null)
+            {
+                if (line == user)
+                {
+                   return  counter;                 
+                }
+                counter++;
+            }
+            return -20;
+
+        }
+        protected void Logout()
+        {
+
+        }
+        protected void User(NetworkStream stream, List<string> loggedUsers)
+        {
+            string msg;
+            msg = "Welcome User\n \r";
+            stream.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
+            while(true)
+            {
+
+            }
             //POLECENIA DOSTĘPU:
             //Liczba użytkowników 
             //Logout
         }
-        public bool login(string user, string passwd)
+        public bool Login(string user, string passwd)
         {
-            string msg;
+        
             string line;
             int counter = 0;
             bool userOk = false;
             bool passOk = false;
             System.IO.StreamReader file = new System.IO.StreamReader(@"users.txt");
-            Console.WriteLine("Finding user\n");
+            Console.WriteLine("Finding user\n"+user);
 
             while ((line = file.ReadLine()) != null)
             {
@@ -172,6 +341,7 @@ namespace ServerLibrary
                         Console.WriteLine("found password");
                         passOk = true;
                     }
+                    helper++;
                 }
                 file.Close();
             }
@@ -186,7 +356,7 @@ namespace ServerLibrary
             }
         }
 
-        private static string correct(string input)
+        private static string Correct(string input)
         {
             input =Regex.Replace(input, @"\0+", "");
             input = Regex.Replace(input, @"\r\n", "");
