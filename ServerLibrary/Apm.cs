@@ -42,7 +42,8 @@ namespace ServerLibrary
         }
         protected override void BeginDataTransmission(NetworkStream stream)
         {
-            
+            string msg = "Write LOGIN to proceed:\n \r";
+            stream.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
             while (true)
             {
                 try
@@ -64,7 +65,7 @@ namespace ServerLibrary
                     if (rec.Contains("login"))
                     {
              
-                        string msg = "Enter Login:\n \r";
+                        msg = "Enter Login:\n \r";
                         buffer = new byte[Buffer_size];
                         stream.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
                         message_size = stream.Read(buffer, 0, Buffer_size);
