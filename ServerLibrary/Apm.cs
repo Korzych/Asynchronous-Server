@@ -92,7 +92,7 @@ namespace ServerLibrary
                             stream.Write(Encoding.ASCII.GetBytes(msg), 0, msg.Length);
                             if(username == "admin")
                             {
-                                admin(stream, loggedUsers,passwd);
+                                Admin(stream, loggedUsers,passwd);
                                 break;
                             }
                             else
@@ -123,7 +123,7 @@ namespace ServerLibrary
             AcceptClient();
 
         }
-        protected void admin(NetworkStream stream, List<string> loggedUsers,string password)
+        protected void Admin(NetworkStream stream, List<string> loggedUsers,string password)
         {
             string msg;
             msg = "Welcome Administrator\n \rusers - List current users\n \radduser- Add user\n \rdeleteuser- Delete User\n \rlogout- Logout\n \r";
