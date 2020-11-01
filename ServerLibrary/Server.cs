@@ -108,7 +108,10 @@ namespace ServerLibrary
         { 
             TcpListener = new TcpListener(IPAddress, Port);
             TcpListener.Start();
+            
         }
+       
+
         /// <summary>
         /// This function waits for the Client connection.
         /// </summary>
